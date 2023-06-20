@@ -1,1 +1,11 @@
 <p>product-search works!</p>
+
+<input> 
+<br>
+<button type="button" (click)="doStuff()" title="test">test</button>
+<br>
+<ul>
+  <li *ngFor="let item of productList">
+    {{item.title}}
+  </li>
+</ul>
