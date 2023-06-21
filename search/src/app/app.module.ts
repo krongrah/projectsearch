@@ -6,6 +6,7 @@ import { ProductSearchComponent } from './product-search/product-search.componen
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatListModule } from '@angular/material/list';
 import { ProductComponent } from './product/product.component';
+import {MatPaginatorModule} from '@angular/material/paginator';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { ProductComponent } from './product/product.component';
     HttpClientModule,
     BrowserAnimationsModule,
     MatListModule,
+    MatPaginatorModule
   ],
   providers: [],
   bootstrap: [AppComponent]

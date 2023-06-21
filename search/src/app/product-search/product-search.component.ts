@@ -15,18 +15,45 @@ import { Product } from '../interfaces/products';
 export class ProductSearchComponent {
 
   @Input()  productList: Array<any> = [];
-  products: Product[];
+  paginationPage: number = 0;
+  paginationProductsperPage: number = 10;
+  showNextButton:boolean = true;
+  showPrevButton:boolean = false;
 
-  constructor(private http: HttpClient) { 
-    this.products = [];
-  }
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.getProducts("");
   }
 
   doStuff(){
-    this.productList.push({title: "derp"});
+    this.updatePaginationButtons(0);
+  }
+
+  previous(){
+    this.updatePaginationButtons(-1);
+  }
+
+  next(){
+    this.updatePaginationButtons(+1);
+  }
+
+  updatePaginationButtons(change: number){
+
+    var newPage = this.paginationPage + change;
+    var totalPages = Math.ceil(this.productList.length/this.paginationProductsperPage);
+
+    if (newPage < 1) {
+      this.showPrevButton = false;
+    }else{
+      this.showPrevButton = true;
+    }
+    if (newPage > totalPages-1) {
+      this.showNextButton = false;
+    }else{
+      this.showNextButton = true;
+    }
+    this.paginationPage = newPage;
   }
 
 
