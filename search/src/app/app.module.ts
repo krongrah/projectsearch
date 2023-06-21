@@ -13,7 +13,6 @@ import {MatPaginatorModule} from '@angular/material/paginator';
     AppComponent,
     ProductSearchComponent,
     ProductComponent,
-    
   ],
   imports: [
     BrowserModule,

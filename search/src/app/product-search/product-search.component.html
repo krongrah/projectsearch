@@ -1,11 +1,11 @@
 <p>Product list</p>
 
-<input> 
+<input (keydown)="filter($event)" />
 <br>
 <button type="button" (click)="doStuff()" title="test">test</button>
 <br>
 <ul>
-  <li *ngFor="let item of productList | slice:this.paginationPage*this.paginationProductsperPage:(this.paginationPage+1)*this.paginationProductsperPage">
+  <li *ngFor="let item of searchedProductList | slice:this.paginationPage*this.paginationProductsperPage:(this.paginationPage+1)*this.paginationProductsperPage">
     <app-product [product]="item"></app-product>
   </li>
 </ul>
@@ -13,4 +13,3 @@
 <button type="button" *ngIf="this.showPrevButton" (click)="previous()">Previous Page</button>
 {{this.paginationPage+1}}
 <button type="button" *ngIf="this.showNextButton" (click)="next()">Next Page</button>
-

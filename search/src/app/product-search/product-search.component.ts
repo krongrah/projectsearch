@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, fromEvent, of, throwError } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
+import { Observable, from, fromEvent, of, throwError } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, retry, switchMap, tap } from 'rxjs/operators';
 import { Product } from '../interfaces/products';
 
 @Component({
@@ -15,15 +15,19 @@ import { Product } from '../interfaces/products';
 export class ProductSearchComponent {
 
   @Input()  productList: Array<any> = [];
+  @Input()  searchedProductList: Array<any> = [];
+
   paginationPage: number = 0;
   paginationProductsperPage: number = 10;
   showNextButton:boolean = true;
-  showPrevButton:boolean = false;
+  showPrevButton:boolean = true;
 
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.getProducts("");
+    
+    this.getProducts();
+    this.updatePaginationButtons(0);
   }
 
   doStuff(){
@@ -41,7 +45,7 @@ export class ProductSearchComponent {
   updatePaginationButtons(change: number){
 
     var newPage = this.paginationPage + change;
-    var totalPages = Math.ceil(this.productList.length/this.paginationProductsperPage);
+    var totalPages = Math.ceil(this.searchedProductList.length/this.paginationProductsperPage);
 
     if (newPage < 1) {
       this.showPrevButton = false;
@@ -57,29 +61,38 @@ export class ProductSearchComponent {
   }
 
 
-  getProducts(searchTerm: string): void{
-    
-    this.http
-    .get<{ content: Product[] }>('assets/products.json')
-    .subscribe((data) => {
-      const products = data.content; //how do I access this data outside this function?
-      this.productList = products;
-    });
+  getProducts(): void{
+    if (this.productList.length == 0) {
+      console.log("fetching");
+      this.http
+      .get<{ content: Product[] }>('assets/products.json')
+      .subscribe((data) => {
+        const products = data.content;
+        this.productList = products;
+      });
+    }
+  }
 
-    // const params = new HttpParams(/*{fromString: 'name=term'}*/);
-    // var testObservable = this.http.request('GET', "/assets/products.json", {responseType:'json', params});
+  filter(event: Event){
+    of(event).pipe(
+      debounceTime(150),
+      distinctUntilChanged(),
+      tap(val => console.log(val)),
+      map((e: any) => e.target.value),
+      switchMap((keys: string) =>
+      of(this.getFilteredValues(keys)))
+    )
+    .subscribe();
+  }
 
-    // const test = testObservable.subscribe({
-    //   next(position: any) {
-    //     var productListTemp: Array<Product> = position.content;  
-    //     console.log(productListTemp);
-    //   },
-    //   error() {
-    //     console.log("Error");
-    //   }
-    // });
+   getFilteredValues(keys: string): Array<String>{
+    this.getProducts();
+    this.searchedProductList = this.productList.filter(e => e.title.indexOf(keys.toLowerCase()) > -1);
+    return this.productList.filter(e => e.title.indexOf(keys.toLowerCase()) > -1);
    }
-
 
 }
 
+// dataen skal først hentes ved første søgning
+// search fungerer ikke ordenligt
+// search skal søge efter individuelle ord i en hvilken som helst rækkefølge
