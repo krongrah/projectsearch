@@ -6,6 +6,6 @@
 <br>
 <ul>
   <li *ngFor="let item of productList">
-    {{item.title}}
+    <app-product [product]="item"></app-product>
   </li>
 </ul>

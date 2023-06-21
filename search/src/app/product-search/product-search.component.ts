@@ -36,6 +36,7 @@ export class ProductSearchComponent {
     .get<{ content: Product[] }>('assets/products.json')
     .subscribe((data) => {
       const products = data.content; //how do I access this data outside this function?
+      this.productList = products;
     });
 
     // const params = new HttpParams(/*{fromString: 'name=term'}*/);
