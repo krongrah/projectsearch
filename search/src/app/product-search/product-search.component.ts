@@ -48,7 +48,7 @@ export class ProductSearchComponent {
     }else{
       this.showPrevButton = true;
     }
-    if (newPage > totalPages-1) {
+    if (newPage >= totalPages-1) {
       this.showNextButton = false;
     }else{
       this.showNextButton = true;
