@@ -32,11 +32,10 @@ export class ProductSearchComponent {
 
   getProducts(searchTerm: string): void{
     
-
     this.http
     .get<{ content: Product[] }>('assets/products.json')
     .subscribe((data) => {
-      const products = data.content;
+      const products = data.content; //how do I access this data outside this function?
     });
 
     // const params = new HttpParams(/*{fromString: 'name=term'}*/);
@@ -44,7 +43,7 @@ export class ProductSearchComponent {
 
     // const test = testObservable.subscribe({
     //   next(position: any) {
-    //     var productListTemp: Array<Product> = position.content;  //how do I access this data outside this function?
+    //     var productListTemp: Array<Product> = position.content;  
     //     console.log(productListTemp);
     //   },
     //   error() {
