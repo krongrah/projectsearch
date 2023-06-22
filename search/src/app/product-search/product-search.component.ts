@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, from, fromEvent, of, throwError } from 'rxjs';
+import { Observable, forkJoin, from, fromEvent, of, throwError } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, retry, switchMap, tap } from 'rxjs/operators';
 import { Product } from '../interfaces/products';
 
@@ -26,7 +26,6 @@ export class ProductSearchComponent {
 
   ngOnInit(): void {
     
-    this.getProducts();
     this.updatePaginationButtons(0);
   }
 
@@ -60,39 +59,56 @@ export class ProductSearchComponent {
     this.paginationPage = newPage;
   }
 
-
-  getProducts(): void{
+  getProducts(): Observable<{ content: Product[] }>{
     if (this.productList.length == 0) {
-      console.log("fetching");
-      this.http
-      .get<{ content: Product[] }>('assets/products.json')
-      .subscribe((data) => {
+      var obs = this.http.get<{ content: Product[] }>('assets/products.json');
+      obs.subscribe((data) => {
         const products = data.content;
         this.productList = products;
       });
+      return obs;
+    }else{
+      return from(this.productList);
     }
   }
 
   filter(event: Event){
-    of(event).pipe(
-      debounceTime(150),
-      distinctUntilChanged(),
-      tap(val => console.log(val)),
-      map((e: any) => e.target.value),
-      switchMap((keys: string) =>
-      of(this.getFilteredValues(keys)))
-    )
-    .subscribe();
+
+    const example = forkJoin({
+      productList: this.getProducts().pipe(catchError(error => of(error))),
+      keyEvent: of(event).pipe(
+        debounceTime(150),
+        distinctUntilChanged(),
+      )
+
+    }).subscribe(({ productList, keyEvent }) => {
+      of(keyEvent).pipe(
+       
+        map((e: any) => e.target.value),
+        switchMap((keys: string) =>
+        of(this.getFilteredValues(keys)))
+      )
+      .subscribe();
+    });
   }
 
    getFilteredValues(keys: string): Array<String>{
-    this.getProducts();
-    this.searchedProductList = this.productList.filter(e => e.title.indexOf(keys.toLowerCase()) > -1);
-    return this.productList.filter(e => e.title.indexOf(keys.toLowerCase()) > -1);
+
+    var words = keys.split(" ").filter(n => n);
+    console.log(words);
+    this.searchedProductList = this.productList.filter(e => this.containsWords(e.title, words));
+    return this.searchedProductList;
+   }
+
+   containsWords(productName: string, words: string[]): boolean{
+    productName = productName.toLocaleLowerCase();
+
+    for (let index = 0; index < words.length; index++) {
+      if (!productName.includes(words[index].toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
    }
 
 }
-
-// dataen skal først hentes ved første søgning
-// search fungerer ikke ordenligt
-// search skal søge efter individuelle ord i en hvilken som helst rækkefølge
