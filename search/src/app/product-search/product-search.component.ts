@@ -18,9 +18,11 @@ export class ProductSearchComponent {
   @Input()  searchedProductList: Array<any> = [];
 
   paginationPage: number = 0;
+  totalPages: number = 0;
   paginationProductsperPage: number = 10;
-  showNextButton:boolean = true;
-  showPrevButton:boolean = true;
+  showNextButton:boolean = false;
+  showPrevButton:boolean = false;
+  showPageNumber:boolean = false;
 
   constructor(private http: HttpClient) {}
 
@@ -43,20 +45,23 @@ export class ProductSearchComponent {
 
   updatePaginationButtons(change: number){
 
-    var newPage = this.paginationPage + change;
-    var totalPages = Math.ceil(this.searchedProductList.length/this.paginationProductsperPage);
-
-    if (newPage < 1) {
+    this.paginationPage = this.paginationPage + change;
+    this.totalPages = Math.ceil(this.searchedProductList.length/this.paginationProductsperPage);
+    if (this.totalPages > 1) {
+      this.showPageNumber = true;
+    }else{
+      this.showPageNumber = false;
+    }
+    if (this.paginationPage < 1) {
       this.showPrevButton = false;
     }else{
       this.showPrevButton = true;
     }
-    if (newPage >= totalPages-1) {
+    if (this.paginationPage >= this.totalPages-1) {
       this.showNextButton = false;
     }else{
       this.showNextButton = true;
     }
-    this.paginationPage = newPage;
   }
 
   getProducts(): Observable<{ content: Product[] }>{
@@ -88,14 +93,16 @@ export class ProductSearchComponent {
         switchMap((keys: string) =>
         of(this.getFilteredValues(keys)))
       )
-      .subscribe();
+      .subscribe(() => {
+        this.updatePaginationButtons(0);
+      }
+      );
     });
   }
 
    getFilteredValues(keys: string): Array<String>{
 
     var words = keys.split(" ").filter(n => n);
-    console.log(words);
     this.searchedProductList = this.productList.filter(e => this.containsWords(e.title, words));
     return this.searchedProductList;
    }

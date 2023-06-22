@@ -1,4 +1,4 @@
-<p>Product list</p>
+<p>Product Search</p>
 
 <input (keyup)="filter($event)" />
 <br>
@@ -11,5 +11,5 @@
 </ul>
 
 <button type="button" *ngIf="this.showPrevButton" (click)="previous()">Previous Page</button>
-{{this.paginationPage+1}}
+<label *ngIf="this.showPageNumber">{{this.paginationPage+1}}/{{this.totalPages}}</label>
 <button type="button" *ngIf="this.showNextButton" (click)="next()">Next Page</button>
