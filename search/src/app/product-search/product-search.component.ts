@@ -4,6 +4,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, from, fromEvent, of, throwError } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, retry, switchMap, tap } from 'rxjs/operators';
 import { Product } from '../interfaces/products';
+import { IfStmt } from '@angular/compiler';
 
 @Component({
   selector: 'app-product-search',
@@ -27,53 +28,28 @@ export class ProductSearchComponent {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    
-    this.updatePaginationButtons(0);
-  }
-
-  doStuff(){
-    this.updatePaginationButtons(0);
-  }
-
-  previous(){
-    this.updatePaginationButtons(-1);
-  }
-
-  next(){
-    this.updatePaginationButtons(+1);
   }
 
   updatePaginationButtons(change: number){
 
     this.paginationPage = this.paginationPage + change;
     this.totalPages = Math.ceil(this.searchedProductList.length/this.paginationProductsperPage);
-    if (this.totalPages > 1) {
-      this.showPageNumber = true;
-    }else{
-      this.showPageNumber = false;
-    }
-    if (this.paginationPage < 1) {
-      this.showPrevButton = false;
-    }else{
-      this.showPrevButton = true;
-    }
-    if (this.paginationPage >= this.totalPages-1) {
-      this.showNextButton = false;
-    }else{
-      this.showNextButton = true;
-    }
+
+    this.showPageNumber = (this.totalPages > 1) ? true : false;
+    this.showPrevButton = (this.paginationPage < 1) ? false : true;
+    this.showNextButton = (this.paginationPage >= this.totalPages-1) ? false : true;
   }
 
   getProducts(): Observable<{ content: Product[] }>{
     if (this.productList.length == 0) {
-      var obs = this.http.get<{ content: Product[] }>('assets/products.json');
-      obs.subscribe((data) => {
+      var observableProductList = this.http.get<{ content: Product[] }>('assets/products.json');
+      observableProductList.subscribe((data) => {
         const products = data.content;
         this.productList = products;
       });
-      return obs;
+      return observableProductList;
     }else{
-      return from(this.productList);
+      return from(this.productList); // this doesn't work, but is not used.
     }
   }
 
@@ -102,15 +78,16 @@ export class ProductSearchComponent {
 
    getFilteredValues(keys: string): Array<String>{
 
-    var words = keys.split(" ").filter(n => n);
+    var words = keys.split(" ").filter(n => n); // filter to remove "" after entering a space
     this.searchedProductList = this.productList.filter(e => this.containsWords(e.title, words));
     return this.searchedProductList;
    }
 
-   containsWords(productName: string, words: string[]): boolean{
-    productName = productName.toLocaleLowerCase();
 
-    for (let index = 0; index < words.length; index++) {
+   containsWords(productName: string, words: string[]): boolean{
+
+    productName = productName.toLowerCase();
+    for (let index = 0; index < words.length; index++) { //I'm using for loop instead of foreach to be able to break out.
       if (!productName.includes(words[index].toLowerCase())) {
         return false;
       }
